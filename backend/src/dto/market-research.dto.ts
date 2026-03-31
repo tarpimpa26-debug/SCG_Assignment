@@ -1,14 +1,22 @@
-import { IsOptional, IsString } from 'class-validator';
+import {
+  ArrayMinSize,
+  IsArray,
+  IsNotEmpty,
+  IsString,
+} from 'class-validator';
 
 export class MarketResearchDto {
   @IsString()
-  topic!: string;
+  @IsNotEmpty()
+  topic: string;
 
-  @IsOptional()
   @IsString()
-  region?: string;
+  @IsNotEmpty()
+  region: string;
 
-  @IsOptional()
-  @IsString()
-  audience?: string;
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsString({ each: true })
+  @IsNotEmpty({ each: true })
+  markets: string[];
 }

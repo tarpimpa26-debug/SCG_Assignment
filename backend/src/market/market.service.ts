@@ -6,19 +6,7 @@ import { MarketOrchestrator } from '../orchestrators/market.orchestrator';
 export class MarketService {
   constructor(private readonly marketOrchestrator: MarketOrchestrator) {}
 
-  async analyzeMarket(payload: MarketResearchDto) {
-    const input: MarketResearchDto = {
-      topic: payload.topic,
-      region: payload.region || 'Thailand',
-      audience: payload.audience || 'General',
-    };
-
-    const agents = await this.marketOrchestrator.execute(input);
-
-    return {
-      success: true,
-      input,
-      agents,
-    };
+  async analyzeMarket(input: MarketResearchDto) {
+    return this.marketOrchestrator.execute(input);
   }
 }

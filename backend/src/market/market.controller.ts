@@ -7,7 +7,7 @@ export class MarketController {
   constructor(private readonly marketService: MarketService) {}
 
   @Post('analyze')
-  async analyze(@Body() payload: MarketResearchDto) {
-    return this.marketService.analyzeMarket(payload);
+  async analyze(@Body() input: MarketResearchDto) {
+    return this.marketService.analyzeMarket(input);
   }
 }
