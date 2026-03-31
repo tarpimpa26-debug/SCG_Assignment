@@ -4,7 +4,12 @@ import { useState } from 'react';
 import styles from './page.module.css';
 
 type MarketResult = {
-  topic: string;
+  success: boolean;
+  input: {
+    topic: string;
+    region: string;
+    audience: string;
+  };
   agents: {
     research: {
       marketOverview: string;
@@ -17,8 +22,8 @@ type MarketResult = {
       gaps: string;
     };
     summary: {
-      opportunities: string;
-      risks: string;
+      opportunities: string[];
+      risks: string[];
       recommendation: string;
     };
   };
@@ -53,9 +58,17 @@ export default function HomePage() {
       setResult(null);
       setTopic(finalTopic);
 
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/market/explore?topic=${encodeURIComponent(finalTopic)}`
-      );
+      const res = await fetch('http://localhost:3002/market/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          topic: finalTopic,
+          region: 'Thailand',
+          audience: 'SMEs',
+        }),
+      });
 
       if (!res.ok) {
         let message = 'Failed to analyze topic';
@@ -145,13 +158,14 @@ export default function HomePage() {
             <div className={styles.resultsGrid}>
               <section className={styles.topicCard}>
                 <p className={styles.topicLabel}>Analyzed Topic</p>
-                <h2 className={styles.topicTitle}>{result.topic}</h2>
+                <h2 className={styles.topicTitle}>{result.input.topic}</h2>
+                <p className={styles.cardText}>Region: {result.input.region}</p>
+                <p className={styles.cardText}>Audience: {result.input.audience}</p>
               </section>
 
               <section className={styles.card}>
                 <div className={styles.cardHeader}>
-                  <h3 className={`${styles.cardTitle} ${styles.researchTitle}`}>Research Agent</h3>
-                  <span className={`${styles.agentDot} ${styles.researchDot}`} />
+                  <h3 className={styles.cardTitle}>Research Agent</h3>
                 </div>
 
                 <div className={styles.item}>
@@ -172,10 +186,7 @@ export default function HomePage() {
 
               <section className={styles.card}>
                 <div className={styles.cardHeader}>
-                  <h3 className={`${styles.cardTitle} ${styles.competitorTitle}`}>
-                    Competitor Agent
-                  </h3>
-                  <span className={`${styles.agentDot} ${styles.competitorDot}`} />
+                  <h3 className={styles.cardTitle}>Competitor Agent</h3>
                 </div>
 
                 <div className={styles.item}>
@@ -196,18 +207,25 @@ export default function HomePage() {
 
               <section className={styles.card}>
                 <div className={styles.cardHeader}>
-                  <h3 className={`${styles.cardTitle} ${styles.summaryTitle}`}>Summary Agent</h3>
-                  <span className={`${styles.agentDot} ${styles.summaryDot}`} />
+                  <h3 className={styles.cardTitle}>Summary Agent</h3>
                 </div>
 
                 <div className={styles.item}>
                   <p className={styles.label}>Opportunities</p>
-                  <p className={styles.cardText}>{result.agents.summary.opportunities}</p>
+                  {result.agents.summary.opportunities.map((item, index) => (
+                    <p key={index} className={styles.cardText}>
+                      • {item}
+                    </p>
+                  ))}
                 </div>
 
                 <div className={styles.item}>
                   <p className={styles.label}>Risks</p>
-                  <p className={styles.cardText}>{result.agents.summary.risks}</p>
+                  {result.agents.summary.risks.map((item, index) => (
+                    <p key={index} className={styles.cardText}>
+                      • {item}
+                    </p>
+                  ))}
                 </div>
 
                 <div className={styles.item}>

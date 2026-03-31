@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
+import { AiService } from '../ai/ai.service';
+import { MarketResearchDto } from '../dto/market-research.dto';
 
 @Injectable()
 export class ResearchAgent {
-  run(topic: string) {
-    return {
-      marketOverview: `${topic} is a growing market with customer demand and multiple entry opportunities.`,
-      targetCustomers: `Potential customers for ${topic} include mass market, niche buyers, and digital-first consumers.`,
-      demandSignals: `Demand for ${topic} may be influenced by trends, convenience, pricing, and brand perception.`,
-    };
+  constructor(private readonly aiService: AiService) {}
+
+  async analyze(input: MarketResearchDto) {
+    return this.aiService.generateResearch(input);
   }
 }

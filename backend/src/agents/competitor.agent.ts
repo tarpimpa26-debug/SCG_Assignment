@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
+import { AiService } from '../ai/ai.service';
+import { MarketResearchDto } from '../dto/market-research.dto';
 
 @Injectable()
 export class CompetitorAgent {
-  run(topic: string) {
-    return {
-      keyPlayers: `Main competitors in ${topic} may include established brands, local players, and new entrants.`,
-      strengths: `Competitors may compete on pricing, distribution, product quality, and brand recognition.`,
-      gaps: `Possible market gaps in ${topic} include underserved niches, better digital experience, or clearer positioning.`,
-    };
+  constructor(private readonly aiService: AiService) {}
+
+  async analyze(input: MarketResearchDto) {
+    return this.aiService.generateCompetitor(input);
   }
 }

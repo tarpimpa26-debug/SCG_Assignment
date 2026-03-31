@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
+import { AiService } from '../ai/ai.service';
+import { MarketResearchDto } from '../dto/market-research.dto';
 
 @Injectable()
 export class SummaryAgent {
-  run(topic: string) {
-    return {
-      opportunities: `There may be opportunities in ${topic} through differentiation, niche targeting, and better customer experience.`,
-      risks: `Key risks in ${topic} include strong competition, price pressure, and uncertain customer adoption.`,
-      recommendation: `A good next step for ${topic} is to validate demand, study competitors more deeply, and test a focused go-to-market strategy.`,
-    };
+  constructor(private readonly aiService: AiService) {}
+
+  async analyze(input: MarketResearchDto) {
+    return this.aiService.generateSummary(input);
   }
 }

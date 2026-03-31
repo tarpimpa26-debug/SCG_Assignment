@@ -1,14 +1,29 @@
+import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const configService = app.get(ConfigService);
+
+  const frontendUrl =
+    configService.get<string>('FRONTEND_URL') || 'http://localhost:3000';
+  const port = configService.get<number>('PORT') || 3002;
 
   app.enableCors({
-    origin: 'http://localhost:3001',
+    origin: frontendUrl,
     credentials: true,
   });
 
-  await app.listen(3000);
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+    }),
+  );
+
+  await app.listen(port);
+  console.log(`Backend is running on http://localhost:${port}`);
 }
 bootstrap();
