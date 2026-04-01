@@ -9,7 +9,7 @@ The system allows a user to enter a business topic, select a target region, choo
 The solution is built with the required stack:
 
 - **AI Layer:** Python
-- **Frontend:** Next.js / React / TypeScript
+- **Frontend:** Next.js
 - **Backend:** NestJS / TypeScript
 - **Database:** SQLite
 - **Containerization:** Docker Compose
@@ -45,7 +45,6 @@ This project also includes:
 
 ### Frontend
 - Next.js
-- React
 - TypeScript
 - CSS Modules
 
@@ -97,6 +96,8 @@ Responsible for:
 8. Frontend renders the final report
 
 ---
+
+![System Architecture](./system_architecture.png)
 
 ## 5. AI Agent Design
 
@@ -212,9 +213,9 @@ SCG_ASSIGNMENT/
 
 ---
 
-## 9. Environment Variables
+## 9. Environment Setup
 
-This project uses a shared root `.env` file.
+Before running the project, create a root `.env` file in the project root.
 
 Example:
 
@@ -233,14 +234,13 @@ NEXT_PUBLIC_API_URL=http://localhost:3002
 PYTHON_AI_URL=http://ai-agents:8000
 
 USE_OPENAI=true
-OPENAI_API_KEY=your_openai_api_key
+OPENAI_API_KEY=openai_api_key_here
 OPENAI_MODEL=gpt-5.2
 ```
 
-Notes:
-- `NEXT_PUBLIC_API_URL` is used by the frontend
-- `PYTHON_AI_URL` is used by the backend to call the AI service
-- inside Docker, service-to-service communication uses container names
+Important:
+- Replace `openai_api_key_here` with the OpenAI API key provided in the assignment email.
+- The `.env` file must be created before running the project.
 
 ---
 
