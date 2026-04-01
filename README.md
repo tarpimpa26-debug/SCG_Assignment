@@ -13,6 +13,7 @@ The solution is built with the required stack:
 - **Backend:** NestJS / TypeScript
 - **Database:** SQLite
 - **Containerization:** Docker Compose
+- **Cloud Deployment:** Google Cloud Platform (Cloud Run)
 
 ---
 
@@ -33,6 +34,8 @@ This project also includes:
 - database persistence for analysis history
 - a simple web UI for user interaction
 - Docker-based local execution
+- Google Cloud Platform deployment using Cloud Run
+- live deployed services for frontend, backend, and AI agents
 
 ---
 
@@ -57,6 +60,9 @@ This project also includes:
 ### Infrastructure
 - Docker
 - Docker Compose
+- Google Cloud Platform (GCP)
+- Cloud Run
+- Artifact Registry
 
 ---
 
@@ -94,6 +100,23 @@ Responsible for:
 6. Backend stores the result in SQLite
 7. Backend returns the response to the frontend
 8. Frontend renders the final report
+
+### Cloud Deployment Flow (Google Cloud Platform)
+
+The deployed cloud version uses three separate Cloud Run services:
+
+1. **Frontend Cloud Run service** serves the Next.js web application
+2. **Backend Cloud Run service** exposes the NestJS API
+3. **AI Agents Cloud Run service** exposes the FastAPI multi-agent AI layer
+4. The backend communicates with the AI service through its Cloud Run URL
+5. Container images are stored in **Artifact Registry**
+6. OpenAI is used in the AI layer for real analysis output
+
+### Deployed Architecture
+
+- **Frontend:** `https://frontend-965748602065.asia-southeast1.run.app`
+- **Backend:** `https://backend-965748602065.asia-southeast1.run.app`
+- **AI Agents:** `https://ai-agents-965748602065.asia-southeast1.run.app`
 
 ---
 
@@ -178,6 +201,9 @@ The AI flow was split into specialized agents instead of one monolithic prompt s
 - outputs are easier to debug
 - the architecture better reflects agent-based reasoning
 
+### Google Cloud Platform Deployment
+The project was also deployed to **Google Cloud Platform** using **Cloud Run** so the full system can be accessed as a live web application without requiring local setup.
+
 ---
 
 ## 7. Project Structure
@@ -198,6 +224,7 @@ SCG_ASSIGNMENT/
 │   ├── schemas.py
 │   └── main.py
 ├── docker-compose.yml
+├── system_architecture.png
 └── README.md
 ```
 
@@ -205,17 +232,25 @@ SCG_ASSIGNMENT/
 
 ## 8. Services and Ports
 
-| Service | Description | Port |
+| Service | Description | Local Port |
 |---|---|---|
 | Frontend | Next.js UI | 3000 |
 | Backend | NestJS API | 3002 |
 | AI Agents | FastAPI Python AI service | 8000 |
 
+### Cloud Services
+
+| Service | Platform | URL |
+|---|---|---|
+| Frontend | Google Cloud Run | `https://frontend-965748602065.asia-southeast1.run.app` |
+| Backend | Google Cloud Run | `https://backend-965748602065.asia-southeast1.run.app` |
+| AI Agents | Google Cloud Run | `https://ai-agents-965748602065.asia-southeast1.run.app` |
+
 ---
 
 ## 9. Environment Setup
 
-Before running the project, create a root `.env` file in the project root.
+Before running the project locally, create a root `.env` file in the project root.
 
 Example:
 
@@ -241,6 +276,7 @@ OPENAI_MODEL=gpt-5.2
 Important:
 - Replace `openai_api_key_here` with the OpenAI API key provided in the assignment email.
 - The `.env` file must be created before running the project.
+- For **Cloud Run**, environment variables are configured per service in Google Cloud rather than relying only on the local `.env` file.
 
 ---
 
@@ -295,6 +331,28 @@ pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
 
+### Option C: Run on Google Cloud Platform
+
+The full system is deployed on **Google Cloud Platform** using **Cloud Run**.
+
+#### Deployment Summary
+- Docker images are built locally
+- Images are pushed to **Artifact Registry**
+- Three separate Cloud Run services are deployed:
+  - `frontend`
+  - `backend`
+  - `ai-agents`
+
+#### Live URLs
+- Frontend: `https://frontend-965748602065.asia-southeast1.run.app`
+- Backend: `https://backend-965748602065.asia-southeast1.run.app`
+- AI Agents: `https://ai-agents-965748602065.asia-southeast1.run.app`
+
+#### Cloud Notes
+- Backend CORS is configured to allow the deployed frontend URL
+- The AI service is configured with OpenAI credentials in Cloud Run environment variables
+- The frontend is built with the backend Cloud Run URL injected at build time
+
 ---
 
 ## 11. How to Use the System
@@ -306,6 +364,11 @@ uvicorn main:app --reload --port 8000
 5. Click **Analyze Market**
 6. Review the generated report
 7. Review previous saved analyses from the history panel
+
+### Live Demo Entry Point
+Use the deployed frontend:
+
+`https://frontend-965748602065.asia-southeast1.run.app`
 
 ---
 
@@ -340,6 +403,14 @@ Returns AI service health status.
 #### `POST /analyze`
 Runs the Python multi-agent workflow and returns structured analysis.
 
+### Cloud Endpoint Examples
+
+#### Backend
+- `https://backend-965748602065.asia-southeast1.run.app/market/history`
+
+#### AI Service
+- `https://ai-agents-965748602065.asia-southeast1.run.app/health`
+
 ---
 
 ## 13. Database
@@ -362,6 +433,10 @@ Current persistence covers:
 Database file:
 - `analysis_history.sqlite`
 
+### Database Note for Cloud Deployment
+SQLite is suitable for this prototype and works well for local development.  
+For the Cloud Run deployment, SQLite is acceptable for demonstration purposes, but a production-ready version should move to a managed database such as PostgreSQL or Cloud SQL.
+
 ---
 
 ## 14. System Demo Coverage
@@ -383,14 +458,21 @@ This prototype demonstrates:
   - result rendering
   - database-backed history view
 
+- **cloud-based deployment**
+  - live frontend on Google Cloud Platform
+  - live backend API on Cloud Run
+  - live AI service on Cloud Run
+  - end-to-end request flow across all deployed services
+
 ---
 
 ## 15. Assumptions
 
 - This is a prototype assignment, not a production-ready system
 - A valid OpenAI API key is required for real AI output
-- Docker Compose is the primary recommended way to run the system
+- Docker Compose is the primary recommended way to run the system locally
 - SQLite is sufficient for prototype-level persistence
+- Google Cloud Platform deployment is included as an optional cloud extension to the system design
 
 ---
 
@@ -401,6 +483,7 @@ This prototype demonstrates:
 - AI output quality depends on prompt design and model behavior
 - Error handling is prototype-level
 - The current UI focuses on clarity and workflow demonstration over production polish
+- Cloud Run deployment currently uses prototype-oriented infrastructure choices rather than full production hardening
 
 ---
 
@@ -412,8 +495,9 @@ Possible future improvements include:
 - richer report formatting
 - better persistence of detailed agent metadata
 - improved observability and logging
-- cloud deployment
+- migration from SQLite to a managed cloud database
 - stronger market-specific retrieval and external data enrichment
+- more production-ready cloud infrastructure and secrets management
 
 ---
 
@@ -428,5 +512,6 @@ This project satisfies the assignment goal of building an end-to-end AI applicat
 - **Docker-based orchestration**
 - a **multi-agent workflow**
 - a **simple user interface for interaction**
+- **Google Cloud Platform deployment using Cloud Run**
 
-It is designed as a working prototype that demonstrates architecture, integration, and AI-agent-based reasoning across the full stack.
+It is designed as a working prototype that demonstrates architecture, integration, cloud deployment, and AI-agent-based reasoning across the full stack.
