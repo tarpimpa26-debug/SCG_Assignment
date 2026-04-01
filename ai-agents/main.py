@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 
 from agents.competitor_agent import competitor_agent
+from agents.query_understanding_agent import QueryUnderstandingAgent
 from agents.research_agent import research_agent
 from agents.summary_agent import summary_agent
 from schemas import AnalyzeRequest, AnalyzeResponse
@@ -18,6 +19,8 @@ ROOT_ENV_PATH = Path(__file__).resolve().parent.parent / ".env"
 load_dotenv(dotenv_path=ROOT_ENV_PATH)
 
 app = FastAPI(title="SCG AI Agents Service")
+
+query_understanding_agent = QueryUnderstandingAgent()
 
 
 @app.get("/health")
@@ -66,9 +69,15 @@ def analyze_market(payload: AnalyzeRequest):
         ", ".join(normalized_payload.markets),
     )
 
-    research = research_agent(normalized_payload)
-    competitor = competitor_agent(normalized_payload)
-    summary = summary_agent(normalized_payload, research, competitor)
+    query_analysis = query_understanding_agent.analyze(
+        normalized_payload.topic,
+        normalized_payload.region,
+        normalized_payload.markets,
+    )
+
+    research = research_agent(normalized_payload, query_analysis)
+    competitor = competitor_agent(normalized_payload, query_analysis)
+    summary = summary_agent(normalized_payload, research, competitor, query_analysis)
 
     logger.info("[/analyze] completed successfully")
 
@@ -76,6 +85,7 @@ def analyze_market(payload: AnalyzeRequest):
         topic=normalized_payload.topic,
         region=normalized_payload.region,
         markets=normalized_payload.markets,
+        query_analysis=query_analysis,
         keyMarkets=research.keyMarkets,
         marketInsights=research.marketInsights,
         recentDevelopments=competitor.recentDevelopments,

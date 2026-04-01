@@ -1,59 +1,58 @@
-from schemas import AnalyzeRequest, CompetitorResult
-from services.openai_client import call_openai_json, logger
+from schemas import AnalyzeRequest, CompetitorResult, QueryAnalysisResult
+from services.openai_client import can_use_openai, generate_json, logger
 
 
-def competitor_agent(input_data: AnalyzeRequest) -> CompetitorResult:
-    logger.info(
-        "[CompetitorAgent] start | topic=%s | region=%s | markets=%s",
-        input_data.topic,
-        input_data.region,
-        ", ".join(input_data.markets),
+def competitor_agent(
+    payload: AnalyzeRequest,
+    query_analysis: QueryAnalysisResult | None = None,
+) -> CompetitorResult:
+    if can_use_openai():
+        try:
+            qa = query_analysis.dict() if query_analysis else {}
+
+            result = generate_json(
+                system_prompt=(
+                    "You are a competitor intelligence agent. "
+                    "Return concise structured competitor observations and external signals in JSON only."
+                ),
+                user_prompt=(
+                    f"Topic: {payload.topic}\n"
+                    f"Region: {payload.region}\n"
+                    f"Markets: {', '.join(payload.markets)}\n"
+                    f"Query analysis: {qa}\n\n"
+                    "Return 3 recent developments and 3 external signals relevant to competitor tracking."
+                ),
+                json_schema={
+                    "type": "object",
+                    "properties": {
+                        "recentDevelopments": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                        },
+                        "externalSignals": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                        },
+                    },
+                    "required": ["recentDevelopments", "externalSignals"],
+                },
+            )
+            return CompetitorResult(**result)
+        except Exception as exc:
+            logger.warning("competitor_agent fallback to local logic: %s", exc)
+
+    keywords = query_analysis.keywords if query_analysis else []
+    normalized_markets = query_analysis.normalized_query.markets if query_analysis else []
+
+    return CompetitorResult(
+        recentDevelopments=[
+            f"Competitor activity around {payload.topic} should be monitored in {', '.join(payload.markets)}.",
+            f"Regional players in {payload.region} may already be expanding related offerings.",
+            f"Normalized market focus for tracking: {', '.join(normalized_markets) if normalized_markets else ', '.join(payload.markets)}.",
+        ],
+        externalSignals=[
+            f"Track investment, partnerships, and product launches related to {payload.topic}.",
+            f"Watch keywords such as: {', '.join(keywords) if keywords else payload.topic}.",
+            f"Monitor policy, construction, infrastructure, and sustainability signals across {payload.region}.",
+        ],
     )
-
-    prompt = f"""
-You are CompetitorAgent.
-
-Role:
-Analyze competitive movement, recent developments, and external market signals.
-
-Input:
-- Topic: {input_data.topic}
-- Region: {input_data.region}
-- Markets: {", ".join(input_data.markets)}
-
-Rules:
-- Focus on ALL selected markets first.
-- Cover competition, pricing pressure, regulatory movement, supply-demand shifts, and channel dynamics.
-- Keep it suitable for a corporate market exploration report.
-- recentDevelopments and externalSignals may contain as many items as needed, but keep them concise and useful.
-
-Return ONLY valid JSON in this exact shape:
-{{
-  "recentDevelopments": ["string", "string", "string"],
-  "externalSignals": ["string", "string", "string"]
-}}
-    """.strip()
-
-    try:
-        parsed = call_openai_json(prompt, "CompetitorAgent")
-        result = CompetitorResult(**parsed)
-        logger.info(
-            "[CompetitorAgent] success | developments=%s | signals=%s",
-            len(result.recentDevelopments),
-            len(result.externalSignals),
-        )
-        return result
-    except Exception as exc:
-        logger.warning("[CompetitorAgent] fallback to mock | error=%s", exc)
-        return CompetitorResult(
-            recentDevelopments=[
-                f"Recent cost and supply changes are affecting {input_data.topic} across {', '.join(input_data.markets)}.",
-                f"Competitive activity in {input_data.region} is increasing through distribution expansion and pricing pressure across the selected markets.",
-                f"Local channel shifts and modern trade growth may reshape how {input_data.topic} products win share in the selected countries.",
-            ],
-            externalSignals=[
-                f"Commodity and FX movement may affect margin stability in {', '.join(input_data.markets)}.",
-                "Consumer demand may vary by market, requiring localized go-to-market execution across the selected countries.",
-                "Regulatory and labeling expectations may influence launch speed and product adaptation in each market.",
-            ],
-        )

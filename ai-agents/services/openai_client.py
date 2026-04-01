@@ -2,62 +2,84 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Any, Dict
 
 from dotenv import load_dotenv
 from openai import OpenAI
 
-ROOT_ENV_PATH = Path(__file__).resolve().parent.parent.parent / ".env"
+ROOT_ENV_PATH = Path(__file__).resolve().parent.parent / ".env"
 load_dotenv(dotenv_path=ROOT_ENV_PATH)
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-5.2").strip()
+USE_OPENAI = os.getenv("USE_OPENAI", "false").strip().lower() == "true"
 
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s | %(levelname)s | %(message)s",
+    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
 )
 logger = logging.getLogger("scg-ai-agents")
 
-USE_OPENAI = os.getenv("USE_OPENAI", "true").lower() == "true"
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-5.2")
-
-client: Optional[OpenAI] = None
-if USE_OPENAI and OPENAI_API_KEY:
-    client = OpenAI(api_key=OPENAI_API_KEY)
-    logger.info(
-        "[Startup] OpenAI client initialized | model=%s | has_api_key=%s",
-        OPENAI_MODEL,
-        bool(OPENAI_API_KEY),
-    )
-else:
-    logger.warning(
-        "[Startup] Running without active OpenAI client | use_openai=%s | has_api_key=%s",
-        USE_OPENAI,
-        bool(OPENAI_API_KEY),
-    )
+_client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
 
-def call_openai_json(prompt: str, label: str) -> dict:
-    if not client:
-        raise RuntimeError(f"OpenAI client unavailable for {label}")
+def can_use_openai() -> bool:
+    return USE_OPENAI and bool(OPENAI_API_KEY) and _client is not None
 
-    logger.info("[%s] calling OpenAI | model=%s", label, OPENAI_MODEL)
 
-    response = client.responses.create(
+def _strip_json_fence(text: str) -> str:
+    cleaned = text.strip()
+
+    if cleaned.startswith("```json"):
+        cleaned = cleaned[7:]
+    elif cleaned.startswith("```"):
+        cleaned = cleaned[3:]
+
+    if cleaned.endswith("```"):
+        cleaned = cleaned[:-3]
+
+    return cleaned.strip()
+
+
+def generate_text(system_prompt: str, user_prompt: str) -> str:
+    if not can_use_openai():
+        raise RuntimeError("OpenAI is not enabled or API key is missing.")
+
+    response = _client.responses.create(
         model=OPENAI_MODEL,
-        input=prompt,
+        instructions=system_prompt,
+        input=user_prompt,
     )
 
-    output_text = (response.output_text or "").strip()
+    output = (response.output_text or "").strip()
+    if not output:
+        raise RuntimeError("OpenAI returned empty text output.")
 
-    logger.info("[%s] OpenAI responded | output_length=%s", label, len(output_text))
+    return output
 
-    if not output_text:
-        raise RuntimeError(f"OpenAI returned empty output_text for {label}")
+
+def generate_json(
+    system_prompt: str,
+    user_prompt: str,
+    json_schema: Dict[str, Any],
+) -> Dict[str, Any]:
+    schema_text = json.dumps(json_schema, ensure_ascii=False, indent=2)
+
+    raw_text = generate_text(
+        system_prompt=system_prompt,
+        user_prompt=(
+            f"{user_prompt}\n\n"
+            "Return ONLY valid JSON.\n"
+            "Do not include markdown fences.\n"
+            "JSON schema:\n"
+            f"{schema_text}"
+        ),
+    )
+
+    cleaned = _strip_json_fence(raw_text)
 
     try:
-        parsed = json.loads(output_text)
-        logger.info("[%s] JSON parse success", label)
-        return parsed
+        return json.loads(cleaned)
     except json.JSONDecodeError as exc:
-        logger.error("[%s] JSON parse failed | raw=%s", label, output_text)
-        raise RuntimeError(f"Failed to parse JSON for {label}: {output_text}") from exc
+        logger.error("Failed to parse OpenAI JSON output: %s", cleaned)
+        raise RuntimeError("OpenAI returned invalid JSON.") from exc
