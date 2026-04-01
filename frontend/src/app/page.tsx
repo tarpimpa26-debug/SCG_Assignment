@@ -126,6 +126,12 @@ export default function HomePage() {
   const displayMarkets =
     result?.markets?.length ? result.markets.join(', ') : markets.join(', ');
 
+  const informationNeeded = [
+    'Key markets in the selected region',
+    'Industry or market insights',
+    'Recent developments affecting the selected markets',
+  ];
+
   return (
     <main className={styles.page}>
       <div className={styles.container}>
@@ -285,6 +291,106 @@ export default function HomePage() {
                   </div>
                 </div>
               </section>
+
+              <article className={styles.card}>
+                <div className={styles.cardHeader}>
+                  <div>
+                    <p className={styles.agentTag}>Input Summary</p>
+                    <h4 className={`${styles.cardTitle} ${styles.researchTitle}`}>
+                      Query Understanding
+                    </h4>
+                  </div>
+                  <span className={`${styles.agentDot} ${styles.researchDot}`} />
+                </div>
+
+                <div className={styles.item}>
+                  <p className={styles.label}>Topic</p>
+                  <p className={styles.cardText}>{result.topic}</p>
+                </div>
+
+                <div className={styles.item}>
+                  <p className={styles.label}>Region</p>
+                  <p className={styles.cardText}>{result.region}</p>
+                </div>
+
+                <div className={styles.item}>
+                  <p className={styles.label}>Selected Markets</p>
+                  <p className={styles.cardText}>{displayMarkets}</p>
+                </div>
+
+                <div className={styles.item}>
+                  <p className={styles.label}>Information Needed</p>
+                  <div className={styles.listWrap}>
+                    {informationNeeded.map((item, index) => (
+                      <p key={`need-${index}`} className={styles.listItem}>
+                        {item}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              </article>
+
+              <article className={styles.card}>
+                <div className={styles.cardHeader}>
+                  <div>
+                    <p className={styles.agentTag}>System Result</p>
+                    <h4 className={`${styles.cardTitle} ${styles.summaryTitle}`}>
+                      Exploration Report
+                    </h4>
+                  </div>
+                  <span className={`${styles.agentDot} ${styles.summaryDot}`} />
+                </div>
+
+                <div className={styles.item}>
+                  <p className={styles.label}>Key Markets</p>
+                  <div className={styles.listWrap}>
+                    {result.keyMarkets.length ? (
+                      result.keyMarkets.map((item, index) => (
+                        <p key={`report-market-${index}`} className={styles.listItem}>
+                          {item}
+                        </p>
+                      ))
+                    ) : (
+                      <p className={styles.listItem}>No key markets available.</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className={styles.item}>
+                  <p className={styles.label}>Market Insights</p>
+                  <div className={styles.listWrap}>
+                    {result.marketInsights.length ? (
+                      result.marketInsights.map((item, index) => (
+                        <p key={`report-insight-${index}`} className={styles.listItem}>
+                          {item}
+                        </p>
+                      ))
+                    ) : (
+                      <p className={styles.listItem}>No market insights available.</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className={styles.item}>
+                  <p className={styles.label}>Recent Developments</p>
+                  <div className={styles.listWrap}>
+                    {result.recentDevelopments.length ? (
+                      result.recentDevelopments.map((item, index) => (
+                        <p key={`report-development-${index}`} className={styles.listItem}>
+                          {item}
+                        </p>
+                      ))
+                    ) : (
+                      <p className={styles.listItem}>No recent developments available.</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className={styles.item}>
+                  <p className={styles.label}>Overall Insight</p>
+                  <p className={styles.cardText}>{result.overallInsight}</p>
+                </div>
+              </article>
 
               <article className={styles.card}>
                 <div className={styles.cardHeader}>
