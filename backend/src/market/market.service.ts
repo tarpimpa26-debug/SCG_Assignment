@@ -107,4 +107,14 @@ export class MarketService {
       );
     }
   }
+
+  async getHistory() {
+    this.logger.log('[getHistory] fetching analysis history from DB');
+
+    return this.analysisHistoryRepository.find({
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+  }
 }
