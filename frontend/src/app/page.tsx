@@ -98,7 +98,9 @@ export default function HomePage() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:3002/market/analyze', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+
+      const response = await fetch(`${apiUrl}/market/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

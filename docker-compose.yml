@@ -1,0 +1,51 @@
+version: "3.9"
+
+services:
+  ai-agents:
+    build:
+      context: ./ai-agents
+      dockerfile: Dockerfile
+    container_name: scg-ai-agents
+    env_file:
+      - ./.env
+    ports:
+      - "${AI_AGENTS_PORT:-8000}:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: scg-backend
+    env_file:
+      - ./.env
+    ports:
+      - "${PORT:-3002}:3002"
+    depends_on:
+      ai-agents:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    container_name: scg-frontend
+    env_file:
+      - ./.env
+    environment:
+      FRONTEND_PORT: 3000
+      PORT: 3000
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped

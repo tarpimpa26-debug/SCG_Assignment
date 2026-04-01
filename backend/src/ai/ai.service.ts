@@ -101,7 +101,7 @@ Return ONLY valid JSON with exactly this shape:
       return this.mockResearch(input);
     }
   }
-
+  
   async generateCompetitor(
     input: MarketResearchDto,
   ): Promise<CompetitorResult> {
