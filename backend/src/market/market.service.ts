@@ -4,11 +4,32 @@ import {
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { MarketResearchDto } from '../dto/market-research.dto';
+import { AnalysisHistory } from '../analysis/analysis-history.entity';
+
+type AnalyzeResult = {
+  topic: string;
+  region: string;
+  markets: string[];
+  keyMarkets: string[];
+  marketInsights: string[];
+  recentDevelopments: string[];
+  externalSignals: string[];
+  overallInsight: string;
+  opportunities: string[];
+  risks: string[];
+};
 
 @Injectable()
 export class MarketService {
   private readonly logger = new Logger(MarketService.name);
+
+  constructor(
+    @InjectRepository(AnalysisHistory)
+    private readonly analysisHistoryRepository: Repository<AnalysisHistory>,
+  ) {}
 
   async analyzeMarket(input: MarketResearchDto) {
     const pythonAiUrl = process.env.PYTHON_AI_URL || 'http://ai-agents:8000';
@@ -50,10 +71,23 @@ export class MarketService {
         );
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as AnalyzeResult;
+
+      await this.analysisHistoryRepository.save({
+        topic: data.topic,
+        region: data.region,
+        markets: data.markets,
+        keyMarkets: data.keyMarkets,
+        marketInsights: data.marketInsights,
+        recentDevelopments: data.recentDevelopments,
+        externalSignals: data.externalSignals,
+        overallInsight: data.overallInsight,
+        opportunities: data.opportunities,
+        risks: data.risks,
+      });
 
       this.logger.log(
-        `[analyzeMarket] success | topic=${data.topic} | region=${data.region} | markets=${Array.isArray(data.markets) ? data.markets.join(', ') : ''}`,
+        `[analyzeMarket] success and saved to DB | topic=${data.topic} | region=${data.region} | markets=${Array.isArray(data.markets) ? data.markets.join(', ') : ''}`,
       );
 
       return data;
@@ -65,11 +99,11 @@ export class MarketService {
       const message = error instanceof Error ? error.message : 'Unknown error';
 
       this.logger.error(
-        `[analyzeMarket] failed to connect to Python AI service | url=${pythonAiUrl} | error=${message}`,
+        `[analyzeMarket] failed | url=${pythonAiUrl} | error=${message}`,
       );
 
       throw new InternalServerErrorException(
-        `Failed to connect to Python AI service at ${pythonAiUrl}`,
+        `Failed to analyze market or save result to database`,
       );
     }
   }
