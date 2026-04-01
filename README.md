@@ -1,67 +1,53 @@
 # SCG Assignment – AI Multi-Agent Market Exploration System
 
-## Overview
+## 1. Project Overview
 
-This project is a prototype AI-powered market exploration platform developed as part of a Full-Stack AI Engineer take-home assignment.
+This project is a prototype AI-powered market exploration platform developed for a Full-Stack AI Engineer take-home assignment.
 
-The application allows users to enter a business topic, target region, and target markets, then generates a structured market exploration report through a multi-service AI workflow.
+The system allows a user to enter a business topic, select a target region, choose one or more target markets, and receive a structured market exploration report generated through a multi-agent AI workflow.
 
-This project is built with:
+The solution is built with the required stack:
 
-- Next.js frontend
-- NestJS backend
-- Python AI service
-- SQLite database
-- Docker Compose for local orchestration
-
----
-
-## Project Objective
-
-The goal of this project is to demonstrate the ability to build an end-to-end AI application that includes:
-
-- frontend development
-- backend API development
-- AI service orchestration
-- multi-agent analysis flow
-- database integration
-- Docker-based local deployment
-
-This is a working prototype intended to showcase architecture, integration, and full-stack implementation.
+- **AI Layer:** Python
+- **Frontend:** Next.js / React / TypeScript
+- **Backend:** NestJS / TypeScript
+- **Database:** SQLite
+- **Containerization:** Docker Compose
 
 ---
 
-## What the Application Does
+## 2. Deliverables Checklist
 
-The system allows a user to:
+This repository includes:
 
-- enter a business topic
-- specify a target region
-- specify one or more target markets
-- submit the request for AI analysis
-- receive a structured market exploration result
-- store analysis history in a database
-- retrieve previous analysis history from the backend
+- `/frontend`
+- `/backend`
+- `/ai-agents`
+- `/docker-compose.yml`
+- `README.md`
 
-The analysis is processed through the following flow:
+This project also includes:
 
-1. the frontend collects user input
-2. the backend receives and validates the request
-3. the backend calls the Python AI service
-4. the Python AI service runs a multi-agent analysis flow
-5. the AI result is returned to the backend
-6. the backend stores the result in SQLite
-7. the backend sends the final response to the frontend
-8. the frontend displays the final market exploration report
+- a working multi-agent workflow
+- backend API integration
+- database persistence for analysis history
+- a simple web UI for user interaction
+- Docker-based local execution
 
 ---
 
-## Tech Stack
+## 3. Technical Stack
+
+### AI Layer
+- Python
+- FastAPI
+- OpenAI integration
 
 ### Frontend
 - Next.js
 - React
 - TypeScript
+- CSS Modules
 
 ### Backend
 - NestJS
@@ -69,76 +55,166 @@ The analysis is processed through the following flow:
 - TypeORM
 - SQLite
 
-### AI Service
-- Python
-- FastAPI
-- OpenAI API
-
 ### Infrastructure
 - Docker
 - Docker Compose
 
 ---
 
-## Multi-Agent Architecture
+## 4. System Architecture
 
-The Python AI service uses a simple multi-agent structure.
+The system is organized into three services:
 
-### Agents
-- **Research Agent**
-  - analyzes selected markets
-  - returns `keyMarkets` and `marketInsights`
+### Frontend
+Responsible for:
+- collecting user input
+- submitting analysis requests
+- displaying the final market exploration result
+- displaying saved history from the database
 
-- **Competitor / External Signals Agent**
-  - analyzes recent developments, competition, and market signals
-  - returns `recentDevelopments` and `externalSignals`
+### Backend
+Responsible for:
+- receiving and validating API requests
+- orchestrating communication between frontend and Python AI service
+- saving analysis results into SQLite
+- returning saved history to the frontend
 
-- **Summary Agent**
-  - synthesizes outputs from the other agents
-  - returns `overallInsight`, `opportunities`, and `risks`
+### AI Service
+Responsible for:
+- running the multi-agent workflow
+- producing structured market exploration output
+- generating research, signals, and strategic summary data
 
-### Orchestration Flow
-- FastAPI route receives the request
-- orchestrator runs the agents in sequence
-- the final result is assembled and returned to the backend
+### End-to-End Flow
+
+1. User enters topic, region, and markets in the frontend
+2. Frontend sends request to NestJS backend
+3. Backend validates request and forwards it to Python AI service
+4. Python AI service runs the AI agent workflow
+5. Python AI service returns structured analysis
+6. Backend stores the result in SQLite
+7. Backend returns the response to the frontend
+8. Frontend renders the final report
 
 ---
 
-## Project Structure
+## 5. AI Agent Design
+
+The Python AI layer uses a multi-agent structure.
+
+### 5.1 Query Understanding Agent
+Purpose:
+- normalize the user input
+- infer intent
+- identify keywords
+- generate a research brief for downstream agents
+
+Output:
+- original input
+- normalized query
+- intent
+- focus areas
+- keywords
+- research brief
+
+### 5.2 Research Agent
+Purpose:
+- identify relevant target markets
+- generate concise market insights
+
+Output:
+- keyMarkets
+- marketInsights
+
+### 5.3 Competitor / External Signals Agent
+Purpose:
+- identify recent developments
+- summarize external signals and market movement
+
+Output:
+- recentDevelopments
+- externalSignals
+
+### 5.4 Summary Agent
+Purpose:
+- synthesize outputs from the other agents
+- produce executive-level conclusions
+
+Output:
+- overallInsight
+- opportunities
+- risks
+
+---
+
+## 6. Design Decisions
+
+Key design decisions made in this prototype:
+
+### Python for AI Layer
+Python was chosen because it is the most practical language for AI integration, prompt workflows, and model-facing logic.
+
+### NestJS for Backend
+NestJS was used to provide a structured backend layer for:
+- API integration
+- request validation
+- business logic
+- database integration
+- orchestration between UI and AI service
+
+### Next.js for Frontend
+Next.js was used to quickly build a clean user-facing interface with strong TypeScript support.
+
+### SQLite for Persistence
+SQLite was chosen because it is simple and effective for prototype-level persistence of analysis history.
+
+### Docker Compose for Local Orchestration
+Docker Compose was used to ensure the frontend, backend, and AI layer can run together consistently in a local environment.
+
+### Multi-Agent Separation
+The AI flow was split into specialized agents instead of one monolithic prompt so that:
+- responsibilities are clearer
+- outputs are easier to debug
+- the architecture better reflects agent-based reasoning
+
+---
+
+## 7. Project Structure
 
 ```bash
 SCG_ASSIGNMENT/
-├── frontend/                  # Next.js frontend
-├── backend/                   # NestJS backend
-│   ├── src/
-│   │   ├── analysis/          # SQLite entity for analysis history
-│   │   ├── dto/               # request DTOs
-│   │   └── market/            # controller, service, module
-├── ai-agents/                 # Python AI service
-│   ├── agents/                # research, competitor, summary agents
-│   ├── orchestrators/         # market orchestrator
-│   ├── services/              # shared OpenAI client
-│   ├── schemas.py             # request/response schemas
-│   └── main.py                # FastAPI entry point
-├── docker-compose.yml         # Multi-service local setup
-└── .env                       # Shared root environment variables
+├── frontend/
+├── backend/
+│   └── src/
+│       ├── analysis/
+│       ├── dto/
+│       ├── market/
+│       └── ...
+├── ai-agents/
+│   ├── agents/
+│   ├── orchestrators/
+│   ├── services/
+│   ├── schemas.py
+│   └── main.py
+├── docker-compose.yml
+└── README.md
 ```
 
 ---
 
-## Services and Ports
+## 8. Services and Ports
 
 | Service | Description | Port |
-|--------|-------------|------|
-| Frontend | Next.js web application | 3000 |
-| Backend | NestJS API service | 3002 |
-| AI Agents | Python AI service | 8000 |
+|---|---|---|
+| Frontend | Next.js UI | 3000 |
+| Backend | NestJS API | 3002 |
+| AI Agents | FastAPI Python AI service | 8000 |
 
 ---
 
-## Environment Configuration
+## 9. Environment Variables
 
-This project uses a single shared root `.env` file.
+This project uses a shared root `.env` file.
 
 Example:
 
@@ -157,165 +233,90 @@ NEXT_PUBLIC_API_URL=http://localhost:3002
 PYTHON_AI_URL=http://ai-agents:8000
 
 USE_OPENAI=true
-OPENAI_API_KEY=openai_api_key
+OPENAI_API_KEY=your_openai_api_key
 OPENAI_MODEL=gpt-5.2
 ```
 
-### Environment Variable Notes
-
-- `FRONTEND_PORT` = frontend port
-- `PORT` = backend port
-- `AI_AGENTS_PORT` = AI service port
-- `FRONTEND_URL` = frontend URL
-- `BACKEND_URL` = backend URL
-- `NEXT_PUBLIC_API_URL` = backend URL used by the frontend
-- `PYTHON_AI_URL` = internal Docker URL used by backend to call the AI service
-- `USE_OPENAI` = toggle for OpenAI usage
-- `OPENAI_API_KEY` = OpenAI API key
-- `OPENAI_MODEL` = OpenAI model name
+Notes:
+- `NEXT_PUBLIC_API_URL` is used by the frontend
+- `PYTHON_AI_URL` is used by the backend to call the AI service
+- inside Docker, service-to-service communication uses container names
 
 ---
 
-## Prerequisites
+## 10. Running Instructions
 
-Before running this project, make sure the following tools are installed:
+### Option A: Run with Docker Compose
 
-- Git
-- Docker
-- Docker Compose
-
-You will also need a valid OpenAI API key if you want to run with real AI output.
-
----
-
-## How to Run This Project Locally
-
-After cloning the repository, follow these steps:
-
-### 1. Go to the project folder
-
-```bash
-cd SCG_ASSIGNMENT
-```
-
-### 2. Create a root `.env` file
-
-Create a file named `.env` in the project root and add the required environment variables.
-
-Example:
-
-```env
-APP_NAME=SCG_ASSIGNMENT
-APP_ENV=development
-
-FRONTEND_PORT=3000
-PORT=3002
-AI_AGENTS_PORT=8000
-
-FRONTEND_URL=http://localhost:3000
-BACKEND_URL=http://localhost:3002
-NEXT_PUBLIC_API_URL=http://localhost:3002
-
-PYTHON_AI_URL=http://ai-agents:8000
-
-USE_OPENAI=true
-OPENAI_API_KEY=openai_api_key_here
-OPENAI_MODEL=gpt-5.2
-```
-### Replace openai_api_key_here with the OpenAI API key provided in the email.
-
-### 3. Build and start all services
+From the project root:
 
 ```bash
 docker compose up --build
 ```
 
-### 4. Open the application
-
-- Frontend: `http://localhost:3000`
-- Backend health: `http://localhost:3002/api/health`
-- AI service health: `http://localhost:8000/health`
-
-### 5. Stop the project
-
-```bash
-docker compose down
-```
-
----
-
-## Running in Background
-
-To run the project in detached mode:
+Run in background:
 
 ```bash
 docker compose up --build -d
 ```
 
-To stop the containers:
+Stop services:
 
 ```bash
 docker compose down
 ```
 
----
-
-## Viewing Logs
-
-### View all logs
+View logs:
 
 ```bash
 docker compose logs -f
 ```
 
-### View logs for a specific service
+### Option B: Run Locally Without Docker
 
+#### Frontend
 ```bash
-docker compose logs -f frontend
-docker compose logs -f backend
-docker compose logs -f ai-agents
+cd frontend
+npm install
+npm run dev
+```
+
+#### Backend
+```bash
+cd backend
+npm install
+npm run start:dev
+```
+
+#### AI Agents
+```bash
+cd ai-agents
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
 ```
 
 ---
 
-## How to Use the Application
+## 11. How to Use the System
 
 1. Open the frontend in the browser
-2. Enter a business topic
-3. Select the target region
-4. Select one or more target markets
+2. Enter a market topic
+3. Select a region
+4. Select one or more markets
 5. Click **Analyze Market**
-6. Wait for the system to generate the result
-7. Review the returned market exploration report
+6. Review the generated report
+7. Review previous saved analyses from the history panel
 
 ---
 
-## Example Input
+## 12. API Endpoints
 
-Example input:
-
-- **Topic:** Green cement
-- **Region:** Southeast Asia
-- **Markets:** Thailand, Vietnam, Indonesia
-
-Expected behavior:
-
-- the frontend sends the request to the backend
-- the backend calls the Python AI service
-- the AI service runs the multi-agent analysis flow
-- the backend stores the result in SQLite
-- the frontend displays the final result
-
----
-
-## API Overview
-
-### Backend Endpoints
+### Backend
 
 #### `POST /market/analyze`
-Runs market analysis and stores the result in SQLite.
+Runs market analysis, saves the result to SQLite, and returns the final report.
 
-Example request body:
+Example request:
 
 ```json
 {
@@ -325,86 +326,27 @@ Example request body:
 }
 ```
 
-Example response shape:
-
-```json
-{
-  "topic": "Green cement",
-  "region": "Southeast Asia",
-  "markets": ["Thailand", "Vietnam", "Indonesia"],
-  "keyMarkets": ["Thailand", "Vietnam", "Indonesia"],
-  "marketInsights": [
-    "...",
-    "...",
-    "..."
-  ],
-  "recentDevelopments": [
-    "...",
-    "...",
-    "..."
-  ],
-  "externalSignals": [
-    "...",
-    "...",
-    "..."
-  ],
-  "overallInsight": "...",
-  "opportunities": [
-    "...",
-    "...",
-    "..."
-  ],
-  "risks": [
-    "...",
-    "...",
-    "..."
-  ]
-}
-```
-
 #### `GET /market/history`
-Returns saved analysis history from SQLite.
+Returns saved analysis history.
 
 #### `GET /api/health`
 Returns backend health status.
 
-### AI Service Endpoints
+### AI Service
 
 #### `GET /health`
 Returns AI service health status.
 
 #### `POST /analyze`
-Runs the Python multi-agent analysis flow and returns the final result.
+Runs the Python multi-agent workflow and returns structured analysis.
 
 ---
 
-## Internal Service Communication
-
-Inside Docker, services communicate using service names.
-
-Examples:
-
-- browser to backend:
-  - `http://localhost:3002`
-
-- backend to AI service:
-  - `http://ai-agents:8000`
-
-Use `localhost` for browser access and service names for container-to-container communication.
-
----
-
-## Database
+## 13. Database
 
 The backend stores analysis results in SQLite using TypeORM.
 
-Current database setup:
-- database engine: SQLite
-- ORM: TypeORM
-- entity: `AnalysisHistory`
-- table: `analysis_history`
-
-Saved fields include:
+Current persistence covers:
 - topic
 - region
 - markets
@@ -417,55 +359,74 @@ Saved fields include:
 - risks
 - createdAt
 
----
-
-## Assumptions
-
-This prototype assumes that:
-
-- a valid OpenAI API key is provided when real AI output is required
-- Docker is the preferred way to run the project locally
-- the project is evaluated as a technical assignment prototype
+Database file:
+- `analysis_history.sqlite`
 
 ---
 
-## Limitations
+## 14. System Demo Coverage
 
-Current limitations may include:
+This prototype demonstrates:
 
-- no authentication or user management
-- SQLite is suitable for prototype/demo use, not full production scale
-- limited production-level error handling
-- AI output depends on prompt design and model behavior
-- query understanding is currently lightweight compared with more advanced agent systems
-- the system focuses on prototype workflow rather than production hardening
+- **multi-agent workflow**
+  - query understanding
+  - research generation
+  - competitor / external signal generation
+  - executive summary generation
+
+- **AI reasoning**
+  - structured decomposition of analysis into specialized steps
+  - synthesis of multiple agent outputs
+
+- **user interaction through a simple UI**
+  - form-based input
+  - result rendering
+  - database-backed history view
 
 ---
 
-## Future Improvements
+## 15. Assumptions
+
+- This is a prototype assignment, not a production-ready system
+- A valid OpenAI API key is required for real AI output
+- Docker Compose is the primary recommended way to run the system
+- SQLite is sufficient for prototype-level persistence
+
+---
+
+## 16. Limitations
+
+- No authentication or access control
+- SQLite is not intended for production scale
+- AI output quality depends on prompt design and model behavior
+- Error handling is prototype-level
+- The current UI focuses on clarity and workflow demonstration over production polish
+
+---
+
+## 17. Future Improvements
 
 Possible future improvements include:
 
-- richer final report formatting
-- stronger input validation
-- dedicated query understanding agent
-- better loading and error states
-- database persistence volume configuration in Docker
-- caching and performance optimization
-- deeper AI agent specialization
-- cloud deployment support
+- stronger source grounding and citation quality
+- richer report formatting
+- better persistence of detailed agent metadata
+- improved observability and logging
+- cloud deployment
+- stronger market-specific retrieval and external data enrichment
 
 ---
 
-## Summary
+## 18. Summary
 
-This project is an AI-powered market exploration prototype that demonstrates how to connect:
+This project satisfies the assignment goal of building an end-to-end AI application with:
 
-- a Next.js frontend
-- a NestJS backend
-- a Python AI service
-- multi-agent AI orchestration
-- SQLite database integration
-- Docker Compose orchestration
+- a **Python AI layer**
+- a **TypeScript frontend**
+- a **NestJS backend**
+- **database integration**
+- **Docker-based orchestration**
+- a **multi-agent workflow**
+- a **simple user interface for interaction**
 
-into a working full-stack AI application.
+It is designed as a working prototype that demonstrates architecture, integration, and AI-agent-based reasoning across the full stack.
