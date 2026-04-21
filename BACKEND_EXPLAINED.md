@@ -6,6 +6,58 @@
 
 ---
 
+## โครงสร้างไฟล์
+
+```
+backend/src/
+│
+├── main.ts                         ← จุดเริ่มต้นของทั้ง app
+│                                      สร้าง NestJS app, เปิด CORS,
+│                                      ผูก ValidationPipe, เปิด port 3002
+│
+├── app.module.ts                   ← Root module
+│                                      รวม ConfigModule, TypeORM, MarketModule
+│                                      เป็นเหมือน "สารบัญ" ของทั้ง app
+│
+├── app.controller.ts               ← Route พื้นฐาน
+│                                      GET /           → "Backend is running"
+│                                      GET /api/health → health check
+│
+├── app.service.ts                  ← ⚠️ dead code (ไม่ได้ใช้แล้ว)
+│
+├── app.controller.spec.ts          ← ⚠️ dead code (test file ที่ broken)
+│
+├── dto/                            ← Data Transfer Objects
+│   │                                  กำหนดว่า request body ต้องมีหน้าตาอย่างไร
+│   │                                  ValidationPipe ใช้ไฟล์พวกนี้ตรวจสอบ
+│   │
+│   ├── market-research.dto.ts      ← shape ของ POST /market/analyze
+│   │                                  { topic, region, markets[] }
+│   │
+│   └── explore-market-query.dto.ts ← ⚠️ dead code (ไม่มีใคร import)
+│
+├── analysis/                       ← Database Entity
+│   │                                  บอก TypeORM ว่า table มีหน้าตาอย่างไร
+│   │
+│   └── analysis-history.entity.ts  ← map กับ table analysis_history ใน SQLite
+│                                      ทุก column ที่เก็บในนี้หมด
+│
+└── market/                         ← Feature Module หลัก
+    │                                  business logic ทั้งหมดอยู่ที่นี่
+    │
+    ├── market.module.ts            ← register Controller + Service
+    │                                  บอกว่าใช้ AnalysisHistory repository
+    │
+    ├── market.controller.ts        ← รับ HTTP request แล้วโยนต่อให้ Service
+    │                                  POST /market/analyze
+    │                                  GET  /market/history
+    │
+    └── market.service.ts           ← logic ทั้งหมด
+                                       เรียก Python AI, บันทึก DB, ดึงประวัติ
+```
+
+---
+
 ## ขั้นตอนที่ 1 — จุดเริ่มต้น: `src/main.ts`
 
 ทุกอย่างเริ่มที่นี่ไฟล์เดียว NestJS จะเรียก `bootstrap()` ตอน server start

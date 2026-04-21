@@ -10,12 +10,30 @@
 
 ```
 frontend/
+├── package.json                ← dependencies (Next.js, React, TypeScript)
+├── next.config.ts              ← Next.js config
+├── tsconfig.json               ← TypeScript config
+│
 └── src/
-    └── app/
-        ├── layout.tsx        ← Root layout (HTML wrapper, fonts)
-        ├── page.tsx          ← หน้าหลัก (ทั้ง app อยู่ที่นี่)
-        ├── globals.css       ← Global styles + Tailwind import
-        └── page.module.css   ← CSS Modules สำหรับ page.tsx
+    └── app/                    ← Next.js App Router directory
+        │                          ทุกไฟล์ใน app/ คือ route หรือ layout
+        │
+        ├── layout.tsx          ← Root layout ครอบทุกหน้า
+        │                          โหลด Geist font, ใส่ HTML/body wrapper
+        │                          Next.js โหลดไฟล์นี้ก่อนทุกอย่าง
+        │
+        ├── page.tsx            ← หน้าหลัก (route: /)
+        │                          ทั้ง app อยู่ที่นี่ไฟล์เดียว
+        │                          มี state, functions, และ JSX ครบหมด
+        │
+        ├── globals.css         ← Global styles
+        │                          @import tailwindcss
+        │                          body background gradient
+        │                          CSS custom properties (--background, --foreground)
+        │
+        └── page.module.css     ← CSS Modules เฉพาะ page.tsx
+                                   ทุก className ที่ขึ้นต้นด้วย styles.xxx อยู่ที่นี่
+                                   Grid layout, animations, responsive breakpoints
 ```
 
 ---

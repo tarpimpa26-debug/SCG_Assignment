@@ -3,38 +3,38 @@ import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeor
 @Entity('analysis_history')
 export class AnalysisHistory {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column('text')
-  topic: string;
+  topic!: string;
 
   @Column('text')
-  region: string;
+  region!: string;
 
   @Column('simple-json')
-  markets: string[];
+  markets!: string[];
 
   @Column('simple-json')
-  keyMarkets: string[];
+  keyMarkets!: string[];
 
   @Column('simple-json')
-  marketInsights: string[];
+  marketInsights!: string[];
 
   @Column('simple-json')
-  recentDevelopments: string[];
+  recentDevelopments!: string[];
 
   @Column('simple-json')
-  externalSignals: string[];
+  externalSignals!: string[];
 
   @Column('text')
-  overallInsight: string;
+  overallInsight!: string;
 
   @Column('simple-json')
-  opportunities: string[];
+  opportunities!: string[];
 
   @Column('simple-json')
-  risks: string[];
+  risks!: string[];
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 }

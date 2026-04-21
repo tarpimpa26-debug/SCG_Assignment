@@ -10,19 +10,52 @@
 
 ```
 ai-agents/
-├── main.py                              ← Entry point (FastAPI app)
-├── schemas.py                           ← Pydantic models (type definitions)
-├── requirements.txt                     ← dependencies
-├── agents/
+│
+├── main.py                         ← Entry point (FastAPI app)
+│                                      สร้าง FastAPI app, เปิด port 8000
+│                                      POST /analyze → เรียก 4 agents ตามลำดับ
+│                                      GET  /health  → ตรวจสอบสถานะ
+│
+├── schemas.py                      ← Pydantic models (type definitions)
+│                                      กำหนดรูปร่างของข้อมูลทุกชนิดในระบบ
+│                                      AnalyzeRequest, AnalyzeResponse,
+│                                      QueryAnalysisResult, ResearchResult,
+│                                      CompetitorResult, SummaryResult
+│
+├── requirements.txt                ← Python dependencies
+│                                      fastapi, uvicorn, openai, pydantic, python-dotenv
+│
+├── agents/                         ← AI Agents ทั้ง 4 ตัว
+│   │                                  แต่ละไฟล์ทำงานเฉพาะด้าน
+│   │                                  ทุกตัวมี 2 path: OpenAI / Fallback
+│   │
 │   ├── __init__.py
-│   ├── query_understanding_agent.py     ← Agent 1: วิเคราะห์ query
-│   ├── research_agent.py                ← Agent 2: วิจัยตลาด
-│   ├── competitor_agent.py              ← Agent 3: วิเคราะห์คู่แข่ง
-│   └── summary_agent.py                 ← Agent 4: สรุปผล
-├── orchestrators/
-│   └── market_orchestrator.py           ← Orchestrator (simplified, ไม่ได้ใช้ใน main)
-└── services/
-    └── openai_client.py                 ← OpenAI wrapper
+│   │
+│   ├── query_understanding_agent.py ← Agent 1: วิเคราะห์ query
+│   │                                   รับ topic/region/markets ดิบ
+│   │                                   → normalize, สกัด keywords, สร้าง research_brief
+│   │                                   → ส่งต่อให้ Agent 2, 3, 4 ใช้เป็น context
+│   │
+│   ├── research_agent.py            ← Agent 2: วิจัยตลาด
+│   │                                   รับ payload + QueryAnalysisResult
+│   │                                   → keyMarkets, marketInsights
+│   │
+│   ├── competitor_agent.py          ← Agent 3: วิเคราะห์คู่แข่ง
+│   │                                   รับ payload + QueryAnalysisResult
+│   │                                   → recentDevelopments, externalSignals
+│   │
+│   └── summary_agent.py             ← Agent 4: สรุปผล
+│                                       รับผลจาก Agent 1+2+3 ทั้งหมด
+│                                       → overallInsight, opportunities, risks
+│
+├── orchestrators/                  ← Orchestrator (ไม่ได้ใช้ใน main.py)
+│   └── market_orchestrator.py      ← ⚠️ simplified version ที่ไม่ส่ง query_analysis
+│                                      ให้ agent อื่น — main.py ทำได้ดีกว่าแล้ว
+│
+└── services/                       ← Shared services
+    └── openai_client.py            ← OpenAI wrapper ที่ทุก agent ใช้ร่วมกัน
+                                       can_use_openai(), generate_text(), generate_json()
+                                       โหลด OPENAI_API_KEY, OPENAI_MODEL, USE_OPENAI
 ```
 
 ---
